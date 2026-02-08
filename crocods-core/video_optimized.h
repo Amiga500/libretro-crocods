@@ -27,17 +27,18 @@ static FORCE_INLINE u16 RGB565_FAST(u8 r, u8 g, u8 b)
 /**
  * Optimized palette lookup with prefetch
  * This reduces cache misses when accessing palette data
+ * 
+ * Note: pen_index is guaranteed to be in range [0-31] by the CPC hardware
+ * Gate Array only has 17 pens (0-15 + border), and TabCoul array is [32]
  */
 static FORCE_INLINE u16 PALETTE_LOOKUP_OPT(core_crocods_t *core, u8 pen_index)
 {
-    /* Bounds check only in debug mode */
-#ifdef DEBUG
+    /* Bounds check in all builds for safety */
     if (UNLIKELY(pen_index > 31)) {
-        pen_index = 0;
+        pen_index = 0;  /* Fallback to pen 0 */
     }
-#endif
     
-    /* Direct lookup with no bounds check in release */
+    /* Direct lookup with bounds check above */
     const u8 color_index = core->TabCoul[pen_index];
     return core->BG_PALETTE[color_index];
 }
@@ -60,15 +61,15 @@ static FORCE_INLINE void CONVERT_4_COLORS(core_crocods_t *core, u16 *dest,
  * Fast 32-bit aligned memory copy
  * Copies pixels in 32-bit chunks (2 pixels at a time for RGB565)
  * 
- * Note: This function checks alignment before using 32-bit operations
+ * Note: This function checks 4-byte alignment before using 32-bit operations
  * to avoid unaligned access faults on ARM.
  */
 static FORCE_INLINE void MEMCPY_32BIT_ALIGNED(u16 *dest, const u16 *src, size_t num_pixels)
 {
-    /* Check if both pointers are 4-byte aligned */
-    const int is_aligned = (((uintptr_t)dest & 3) == 0) && (((uintptr_t)src & 3) == 0);
+    /* Check if both pointers are 4-byte (32-bit) aligned */
+    const int is_4byte_aligned = (((uintptr_t)dest & 3) == 0) && (((uintptr_t)src & 3) == 0);
     
-    if (LIKELY(is_aligned && num_pixels >= 2)) {
+    if (LIKELY(is_4byte_aligned && num_pixels >= 2)) {
         /* Process 2 pixels (4 bytes) at a time */
         const size_t num_words = num_pixels >> 1;
         u32 *dest32 = (u32 *)dest;
@@ -83,7 +84,7 @@ static FORCE_INLINE void MEMCPY_32BIT_ALIGNED(u16 *dest, const u16 *src, size_t 
             dest[num_pixels - 1] = src[num_pixels - 1];
         }
     } else {
-        /* Fallback to 16-bit copy if not aligned */
+        /* Fallback to 16-bit copy if not 4-byte aligned */
         for (size_t i = 0; i < num_pixels; i++) {
             dest[i] = src[i];
         }

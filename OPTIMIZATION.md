@@ -288,9 +288,10 @@ Recommended test cases:
 ### Validation
 ```bash
 # Run on target hardware and check FPS
-# Expected: 50 FPS stable (PAL mode)
-# Before: 35-40 FPS
-# After: 50 FPS (locked)
+# Expected (theoretical, results may vary):
+# Before: 35-40 FPS (typical)
+# Target: 50 FPS (PAL locked)
+# Note: Actual performance depends on game content and hardware conditions
 ```
 
 ## Future Optimizations
