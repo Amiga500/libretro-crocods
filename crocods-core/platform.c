@@ -10,6 +10,8 @@
 
 #include "z80.h"
 #include "z80_cap32.h"
+#include "z80_optimized.h"
+#include "video_optimized.h"
 
 #include "ppi.h"
 #include "vga.h"
@@ -777,7 +779,7 @@ int ExecuteMenu(core_crocods_t *core, int n, struct kmenu *current)
             GateArray_Cycle = NULL;
             ResetVGA = wincpc_ResetVGA;
 
-            ExecInstZ80 = ExecInstZ80_orig;
+            ExecInstZ80 = ExecInstZ80_optimized;
             ResetZ80 = ResetZ80_orig;
             SetIRQZ80 = SetIRQZ80_orig;
 
@@ -794,7 +796,7 @@ int ExecuteMenu(core_crocods_t *core, int n, struct kmenu *current)
             GateArray_Cycle = arn_GateArray_Cycle;
             ResetVGA = arn_ResetVGA;
 
-            ExecInstZ80 = ExecInstZ80_orig;
+            ExecInstZ80 = ExecInstZ80_optimized;
             ResetZ80 = ResetZ80_orig;
             SetIRQZ80 = SetIRQZ80_orig;
 
@@ -812,7 +814,7 @@ int ExecuteMenu(core_crocods_t *core, int n, struct kmenu *current)
             GateArray_Cycle = NULL;
             ResetVGA = cap32_ResetVGA;
 
-            ExecInstZ80 = ExecInstZ80_orig;
+            ExecInstZ80 = ExecInstZ80_optimized;
             ResetZ80 = ResetZ80_cap32;
             SetIRQZ80 = SetIRQZ80_cap32;
 
@@ -937,16 +939,8 @@ static void InitCalcPoints(core_crocods_t *core)
 
 void CalcPoints(core_crocods_t *core)
 {
-    int i, j;
-
-    if ((core->lastMode >= 0) && (core->lastMode <= 3)) {
-        for (i = 0; i < 256; i++) {
-            for (j = 0; j < 4; j++) {
-                core->TabPoints[core->lastMode][i][j] = core->BG_PALETTE[core->TabCoul[ core->TabPointsDef[core->lastMode][i][j]]];
-            }
-        }
-    }
-    core->UpdateInk = 0;
+    /* Use optimized version */
+    CalcPoints_Optimized(core);
 }
 
 /********************************************************* !NAME! **************
