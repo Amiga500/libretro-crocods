@@ -280,6 +280,11 @@ ifeq ($(DEBUG), 1)
    CFLAGS += -O0 -g
 else
    CFLAGS += -O3
+   # ARM Cortex-A7 specific optimizations (Miyoo Mini, RG35XX, etc.)
+   ifneq (,$(findstring armv7,$(platform)))
+      CFLAGS += -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
+      CFLAGS += -ffast-math -ftree-vectorize
+   endif
 endif
 
 CORE_DIR := .
@@ -289,7 +294,8 @@ include Makefile.common
 OBJECTS := $(SOURCES_C:.c=.o)
 CFLAGS += $(fpic) $(PLATFORM_DEFINES)
 
-CFLAGS += 
+# Additional optimization flags for all platforms
+CFLAGS += -fomit-frame-pointer -fno-strict-aliasing
 LFLAGS := 
 LDFLAGS += $(LIBM)
 

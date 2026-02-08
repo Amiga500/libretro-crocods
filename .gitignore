@@ -8,3 +8,5 @@
 *.dylib
 *.dsk
 *.kcr
+*.so
+*.a

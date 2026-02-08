@@ -10,6 +10,8 @@
 
 #include "z80.h"
 #include "z80_cap32.h"
+#include "z80_optimized.h"
+#include "video_optimized.h"
 
 #include "ppi.h"
 #include "vga.h"
@@ -937,6 +939,13 @@ static void InitCalcPoints(core_crocods_t *core)
 
 void CalcPoints(core_crocods_t *core)
 {
+    /* Use optimized version */
+    CalcPoints_Optimized(core);
+}
+
+/* Original version kept for reference/debugging
+void CalcPoints_Original(core_crocods_t *core)
+{
     int i, j;
 
     if ((core->lastMode >= 0) && (core->lastMode <= 3)) {
@@ -948,6 +957,7 @@ void CalcPoints(core_crocods_t *core)
     }
     core->UpdateInk = 0;
 }
+*/
 
 /********************************************************* !NAME! **************
 * Nom : InitPlatform
