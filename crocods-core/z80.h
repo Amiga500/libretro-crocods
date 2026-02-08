@@ -106,6 +106,7 @@ int Z80_NMI( core_crocods_t *core );
 int ___C9( core_crocods_t *core );
 
 u16 ExecInstZ80_orig(core_crocods_t *core);
+u16 ExecInstZ80_optimized(core_crocods_t *core);
 void ResetZ80_orig(core_crocods_t *core);
 void SetIRQZ80_orig(core_crocods_t *core, u8 i);
 

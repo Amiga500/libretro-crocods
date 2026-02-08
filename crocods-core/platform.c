@@ -777,7 +777,7 @@ int ExecuteMenu(core_crocods_t *core, int n, struct kmenu *current)
             GateArray_Cycle = NULL;
             ResetVGA = wincpc_ResetVGA;
 
-            ExecInstZ80 = ExecInstZ80_orig;
+            ExecInstZ80 = ExecInstZ80_optimized;
             ResetZ80 = ResetZ80_orig;
             SetIRQZ80 = SetIRQZ80_orig;
 
@@ -794,7 +794,7 @@ int ExecuteMenu(core_crocods_t *core, int n, struct kmenu *current)
             GateArray_Cycle = arn_GateArray_Cycle;
             ResetVGA = arn_ResetVGA;
 
-            ExecInstZ80 = ExecInstZ80_orig;
+            ExecInstZ80 = ExecInstZ80_optimized;
             ResetZ80 = ResetZ80_orig;
             SetIRQZ80 = SetIRQZ80_orig;
 
@@ -812,7 +812,7 @@ int ExecuteMenu(core_crocods_t *core, int n, struct kmenu *current)
             GateArray_Cycle = NULL;
             ResetVGA = cap32_ResetVGA;
 
-            ExecInstZ80 = ExecInstZ80_orig;
+            ExecInstZ80 = ExecInstZ80_optimized;
             ResetZ80 = ResetZ80_cap32;
             SetIRQZ80 = SetIRQZ80_cap32;
 
