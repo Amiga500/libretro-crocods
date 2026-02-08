@@ -59,21 +59,34 @@ static FORCE_INLINE void CONVERT_4_COLORS(core_crocods_t *core, u16 *dest,
 /**
  * Fast 32-bit aligned memory copy
  * Copies pixels in 32-bit chunks (2 pixels at a time for RGB565)
+ * 
+ * Note: This function checks alignment before using 32-bit operations
+ * to avoid unaligned access faults on ARM.
  */
 static FORCE_INLINE void MEMCPY_32BIT_ALIGNED(u16 *dest, const u16 *src, size_t num_pixels)
 {
-    /* Process 2 pixels (4 bytes) at a time */
-    const size_t num_words = num_pixels >> 1;
-    u32 *dest32 = (u32 *)dest;
-    const u32 *src32 = (const u32 *)src;
+    /* Check if both pointers are 4-byte aligned */
+    const int is_aligned = (((uintptr_t)dest & 3) == 0) && (((uintptr_t)src & 3) == 0);
     
-    for (size_t i = 0; i < num_words; i++) {
-        dest32[i] = src32[i];
-    }
-    
-    /* Handle odd pixel if any */
-    if (UNLIKELY(num_pixels & 1)) {
-        dest[num_pixels - 1] = src[num_pixels - 1];
+    if (LIKELY(is_aligned && num_pixels >= 2)) {
+        /* Process 2 pixels (4 bytes) at a time */
+        const size_t num_words = num_pixels >> 1;
+        u32 *dest32 = (u32 *)dest;
+        const u32 *src32 = (const u32 *)src;
+        
+        for (size_t i = 0; i < num_words; i++) {
+            dest32[i] = src32[i];
+        }
+        
+        /* Handle odd pixel if any */
+        if (num_pixels & 1) {
+            dest[num_pixels - 1] = src[num_pixels - 1];
+        }
+    } else {
+        /* Fallback to 16-bit copy if not aligned */
+        for (size_t i = 0; i < num_pixels; i++) {
+            dest[i] = src[i];
+        }
     }
 }
 

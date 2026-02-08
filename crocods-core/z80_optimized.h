@@ -78,25 +78,45 @@ static FORCE_INLINE void POKE8_OPT(core_crocods_t *core, u16 adr, u8 val)
  * Optimizations:
  * - Pre-compute page/offset once
  * - Explicit little-endian byte ordering
+ * - Handle page boundary crossing correctly
  */
 static FORCE_INLINE u16 PEEK16_OPT(core_crocods_t *core, u16 adr)
 {
     const u16 page = adr >> 14;
     const u16 offset = adr & 0x3FFF;
     const u8 low = core->TabPEEK[page][offset];
-    const u8 high = core->TabPEEK[page][offset + 1];
+    
+    /* Handle page boundary crossing (when offset == 0x3FFF) */
+    u8 high;
+    if (UNLIKELY(offset == 0x3FFF)) {
+        /* Next byte is in next page */
+        const u16 next_page = (adr + 1) >> 14;
+        high = core->TabPEEK[next_page][0];
+    } else {
+        high = core->TabPEEK[page][offset + 1];
+    }
+    
     return (u16)(low | (high << 8));
 }
 
 /**
  * POKE16 - Force-inlined 16-bit memory write (little-endian)
+ * Handles page boundary crossing correctly
  */
 static FORCE_INLINE void POKE16_OPT(core_crocods_t *core, u16 adr, u16 val)
 {
     const u16 page = adr >> 14;
     const u16 offset = adr & 0x3FFF;
     core->TabPOKE[page][offset] = (u8)val;
-    core->TabPOKE[page][offset + 1] = (u8)(val >> 8);
+    
+    /* Handle page boundary crossing (when offset == 0x3FFF) */
+    if (UNLIKELY(offset == 0x3FFF)) {
+        /* Next byte is in next page */
+        const u16 next_page = (adr + 1) >> 14;
+        core->TabPOKE[next_page][0] = (u8)(val >> 8);
+    } else {
+        core->TabPOKE[page][offset + 1] = (u8)(val >> 8);
+    }
 }
 
 /**

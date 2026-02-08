@@ -281,9 +281,15 @@ ifeq ($(DEBUG), 1)
 else
    CFLAGS += -O3
    # ARM Cortex-A7 specific optimizations (Miyoo Mini, RG35XX, etc.)
+   # Note: Requires hard-float ABI - use platform=armv7-neon-hardfloat
    ifneq (,$(findstring armv7,$(platform)))
-      CFLAGS += -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
-      CFLAGS += -ffast-math -ftree-vectorize
+      CFLAGS += -mtune=cortex-a7 -mfpu=neon-vfpv4
+      # Only add hard-float if explicitly specified
+      ifneq (,$(findstring hardfloat,$(platform)))
+         CFLAGS += -mfloat-abi=hard
+      endif
+      # Use safer math flags instead of -ffast-math
+      CFLAGS += -fno-math-errno -ffinite-math-only -ftree-vectorize
    endif
 endif
 

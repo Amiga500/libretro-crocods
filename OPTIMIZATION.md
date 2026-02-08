@@ -180,8 +180,11 @@ typedef struct {
 **File:** `Makefile`
 
 ```makefile
-CFLAGS += -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
-CFLAGS += -ffast-math -ftree-vectorize
+# ARM Cortex-A7 optimizations (conditional on platform)
+CFLAGS += -mtune=cortex-a7 -mfpu=neon-vfpv4
+# hard-float only if explicitly specified
+CFLAGS += -mfloat-abi=hard  # (if platform=armv7-neon-hardfloat)
+CFLAGS += -fno-math-errno -ffinite-math-only -ftree-vectorize
 CFLAGS += -fomit-frame-pointer -fno-strict-aliasing
 ```
 
@@ -197,14 +200,16 @@ CFLAGS += -fomit-frame-pointer -fno-strict-aliasing
    - Compiler can vectorize loops automatically
    - 4x throughput for some operations
 
-3. **`-mfloat-abi=hard`**
+3. **`-mfloat-abi=hard`** (conditional)
    - Uses hardware floating point registers
    - Faster than soft-float ABI
    - Required for NEON
+   - **Only enabled with `platform=armv7-neon-hardfloat`**
 
-4. **`-ffast-math`**
-   - Relaxes IEEE 754 compliance
-   - Enables aggressive math optimizations
+4. **`-fno-math-errno -ffinite-math-only`**
+   - Safer alternative to `-ffast-math`
+   - Enables most math optimizations without IEEE 754 compliance issues
+   - Disables errno setting for math functions
    - Safe for emulation (no precise math needed)
 
 5. **`-ftree-vectorize`**
@@ -333,10 +338,14 @@ Expected hot functions:
 - Prefetch is just a hint (ignored if not supported)
 
 ### Potential Issues
-- **`-ffast-math`**: May cause issues with precise timing-sensitive code
-  - Solution: Use `-fno-fast-math` for specific files if needed
 - **Type punning**: Relies on `-fno-strict-aliasing`
   - Solution: Already enabled in Makefile
+- **Unaligned access**: ARM requires proper alignment for 32-bit operations
+  - Solution: Added alignment checks in `MEMCPY_32BIT_ALIGNED()`
+- **Page boundary crossing**: PEEK16/POKE16 must handle 16KB page boundaries
+  - Solution: Added boundary checks in `PEEK16_OPT()` and `POKE16_OPT()`
+- **Hard-float ABI**: Only compatible with hard-float systems
+  - Solution: Made conditional in Makefile (requires `platform=armv7-neon-hardfloat`)
 
 ## Credits
 

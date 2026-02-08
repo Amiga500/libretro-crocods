@@ -943,22 +943,6 @@ void CalcPoints(core_crocods_t *core)
     CalcPoints_Optimized(core);
 }
 
-/* Original version kept for reference/debugging
-void CalcPoints_Original(core_crocods_t *core)
-{
-    int i, j;
-
-    if ((core->lastMode >= 0) && (core->lastMode <= 3)) {
-        for (i = 0; i < 256; i++) {
-            for (j = 0; j < 4; j++) {
-                core->TabPoints[core->lastMode][i][j] = core->BG_PALETTE[core->TabCoul[ core->TabPointsDef[core->lastMode][i][j]]];
-            }
-        }
-    }
-    core->UpdateInk = 0;
-}
-*/
-
 /********************************************************* !NAME! **************
 * Nom : InitPlatform
 ********************************************************** !PATHS! *************
